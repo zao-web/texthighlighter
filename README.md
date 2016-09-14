@@ -1,5 +1,3 @@
-##<center>This repository is no longer maintained!</center> 
-
 # TextHighlighter
 
 TextHighlighter allows you to highlight text on web pages. Just select it!
