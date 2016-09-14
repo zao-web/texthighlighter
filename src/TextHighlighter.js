@@ -747,7 +747,7 @@
      * returned results. Default: true.
      * @param {boolean} [params.grouped] - if set to true, highlights are grouped in logical groups of highlights added
      * in the same moment. Each group is an object which has got array of highlights, 'toString' method and 'timestamp'
-     * property. Default: false.
+     * property. If set to "last" will return most recent group, and if set to "first", will return first group. Default: false.
      * @returns {Array} - array of highlights.
      * @memberof TextHighlighter
      */
@@ -755,7 +755,7 @@
         params = defaults(params, {
             container: this.el,
             andSelf: true,
-            grouped: false
+            grouped: false, // or "first", last"
         });
 
         var nodeList = params.container.querySelectorAll('[' + DATA_ATTR + ']'),
@@ -767,6 +767,11 @@
 
         if (params.grouped) {
             highlights = groupHighlights(highlights);
+            if ( 'last' === params.grouped ) {
+                highlights = highlights[highlights.length-1];
+            } else if ( 'first' === params.grouped ) {
+                highlights = highlights[0];
+            }
         }
 
         return highlights;
