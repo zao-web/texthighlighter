@@ -31,6 +31,12 @@
     ];
 
     /**
+     * Function associated with events
+     *  @type {function}
+     */
+    var FUNCTION_BIND;
+
+    /**
      * Returns true if elements a and b have the same color.
      *
      * @param {Node} a
@@ -419,13 +425,13 @@
     };
 
     function bindEvents(el, scope) {
-        el.addEventListener('mouseup', scope.highlightHandler.bind(scope));
-        el.addEventListener('touchend', scope.highlightHandler.bind(scope));
+        el.addEventListener('mouseup', FUNCTION_BIND);
+        el.addEventListener('touchend', FUNCTION_BIND);
     }
 
     function unbindEvents(el, scope) {
-        el.removeEventListener('mouseup', scope.highlightHandler.bind(scope));
-        el.removeEventListener('touchend', scope.highlightHandler.bind(scope));
+        el.removeEventListener('mouseup', FUNCTION_BIND);
+        el.removeEventListener('touchend', FUNCTION_BIND);
     }
 
     /**
@@ -474,6 +480,7 @@
         });
 
         dom(this.el).addClass(this.options.contextClass);
+        FUNCTION_BIND = this.highlightHandler.bind(this);
 
         if (this.options.enabled) {
             bindEvents(this.el, this);
