@@ -408,7 +408,7 @@
      * Creates TextHighlighter instance and binds to given DOM elements.
      * @param {HTMLElement} element - DOM element to which highlighted will be applied.
      * @param {object} [options] - additional options.
-     * @param {string} options.color - highlight color.
+     * @param {string} options.color - highlight color. Set to false for no inline color.
      * @param {string} options.highlightedClass - class added to highlight, 'highlighted' by default.
      * @param {string} options.contextClass - class added to element to which highlighter is applied,
      *  'highlighter-context' by default.
@@ -439,10 +439,9 @@
         });
 
         dom(this.el).addClass(this.options.contextClass);
-        bindEvents(this.el, this);
-        
-        if (this.options.enabled==false) {
-            this.disable();
+
+        if (this.options.enabled) {
+            bindEvents(this.el, this);
         }
     }
 
@@ -466,9 +465,11 @@
      * @memberof TextHighlighter
      */
     TextHighlighter.prototype.doHighlight = function (keepRange) {
-        
-        if (!this.options.enabled) return false;
-        
+
+        if (!this.options.enabled) {
+            return false;
+        }
+
         var range = dom(this.el).getRange(),
             wrapper,
             createdHighlights,
@@ -524,8 +525,7 @@
 
                 if (IGNORE_TAGS.indexOf(node.parentNode.tagName) === -1 && node.nodeValue.trim() !== '') {
                     wrapperClone = wrapper.cloneNode(true);
-                    
-                    wrapperClone.setAttribute(DATA_ATTR, this.options.color!="");
+                    wrapperClone.setAttribute(DATA_ATTR, !! this.options.color);
                     nodeParent = node.parentNode;
 
                     // highlight if a node is inside the el
@@ -957,23 +957,19 @@
         span.className = options.highlightedClass;
         return span;
     };
-    
-    TextHighlighter.prototype.disable = function()
-    {
+
+    TextHighlighter.prototype.disable = function() {
         if (this.options.enabled) {
-             unbindEvents(this.el, this);
-             this.options.enabled=false;
+            unbindEvents(this.el, this);
+            this.options.enabled=false;
         }
-        
     };
-    
-    TextHighlighter.prototype.enable = function()
-    {
+
+    TextHighlighter.prototype.enable = function() {
         if (!this.options.enabled) {
-             bindEvents(this.el, this);
-             this.options.enabled=true;
+            bindEvents(this.el, this);
+            this.options.enabled=true;
         }
-        
     };
 
     global.TextHighlighter = TextHighlighter;
