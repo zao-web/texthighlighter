@@ -24,18 +24,20 @@ module.exports = function (grunt) {
         BUILD_TARGET = 'TextHighlighter.min.js';
 
     grunt.initConfig({
+        pkg: grunt.file.readJSON('package.json'),
         _TARGET: BUILD_DIR + BUILD_TARGET,
 
-        closurecompiler: {
-            minify: {
+        uglify: {
+            all: {
                 files: {
                     "<%= _TARGET %>": SRC_FILES
                 },
                 options: {
-                    "compilation_level": "SIMPLE_OPTIMIZATIONS",
-                    "banner": '/*\n' + require('fs').readFileSync('LICENSE', { encoding: 'utf8' }) + '*/'
+                    banner: '/*\n' + require('fs').readFileSync('LICENSE', { encoding: 'utf8' }) + "*/\n",
+                    mangle: true
                 }
             }
+
         },
 
         jsdoc : {
@@ -57,14 +59,25 @@ module.exports = function (grunt) {
             }
         },
 
-        clean: [ BUILD_DIR, DOC_DIR ]
+        clean: [ BUILD_DIR, DOC_DIR ],
+
+        watch : {
+            js: {
+                files: SRC_FILES,
+                tasks: ['js'],
+                options: {
+                    debounceDelay: 500
+                }
+            }
+        }
     });
 
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-clean');
-    grunt.loadNpmTasks('grunt-closurecompiler');
+    grunt.loadNpmTasks('grunt-contrib-uglify');
+    grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-jsdoc');
 
-    grunt.registerTask('build', ['closurecompiler:minify']);
-    grunt.registerTask('default', ['build']);
+    grunt.registerTask( 'js', ['jshint', 'uglify']);
+    grunt.registerTask('default', ['js']);
 };
