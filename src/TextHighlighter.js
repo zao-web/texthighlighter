@@ -1,35 +1,44 @@
 (function (global) {
     'use strict';
 
-    var
-        /**
-         * Attribute added by default to every highlight.
-         * @type {string}
-         */
-        DATA_ATTR = 'data-highlighted',
-
-        /**
-         * Attribute used to group highlight wrappers.
-         * @type {string}
-         */
-        TIMESTAMP_ATTR = 'data-timestamp',
-
-        NODE_TYPE = {
-            ELEMENT_NODE: 1,
-            TEXT_NODE: 3
-        },
-
-        /**
-         * Don't highlight content of these tags.
-         * @type {string[]}
-         */
-        IGNORE_TAGS = [
-            'SCRIPT', 'STYLE', 'SELECT', 'OPTION', 'BUTTON', 'OBJECT', 'APPLET', 'VIDEO', 'AUDIO', 'CANVAS', 'EMBED',
-            'PARAM', 'METER', 'PROGRESS'
-        ];
+    /**
+     * Attribute added by default to every highlight.
+     *
+     * @type {string}
+     */
+    var DATA_ATTR = 'data-highlighted';
 
     /**
-     * Returns true if elements a i b have the same color.
+     * Attribute used to group highlight wrappers.
+     *
+     * @type {string}
+     */
+    var TIMESTAMP_ATTR = 'data-timestamp';
+
+    var NODE_TYPE = {
+        ELEMENT_NODE: 1,
+        TEXT_NODE: 3
+    };
+
+    /**
+     * Don't highlight content of these tags.
+     *
+     * @type {string[]}
+     */
+    var IGNORE_TAGS = [
+        'SCRIPT', 'STYLE', 'SELECT', 'OPTION', 'BUTTON', 'OBJECT', 'APPLET', 'VIDEO', 'AUDIO', 'CANVAS', 'EMBED',
+        'PARAM', 'METER', 'PROGRESS'
+    ];
+
+    /**
+     * Function associated with events
+     *  @type {function}
+     */
+    var FUNCTION_BIND;
+
+    /**
+     * Returns true if elements a and b have the same color.
+     *
      * @param {Node} a
      * @param {Node} b
      * @returns {boolean}
@@ -40,14 +49,16 @@
 
     /**
      * Fills undefined values in obj with default properties with the same name from source object.
-     * @param {object} obj - target object
-     * @param {object} source - source object with default values
+     *
+     * @param {object} obj Target object
+     * @param {object} source Source object with default values
      * @returns {object}
      */
     function defaults(obj, source) {
+        var prop;
         obj = obj || {};
 
-        for (var prop in source) {
+        for (prop in source) {
             if (source.hasOwnProperty(prop) && obj[prop] === void 0) {
                 obj[prop] = source[prop];
             }
@@ -58,6 +69,7 @@
 
     /**
      * Returns array without duplicated values.
+     *
      * @param {Array} arr
      * @returns {Array}
      */
@@ -69,14 +81,15 @@
 
     /**
      * Takes range object as parameter and refines it boundaries
+     *
      * @param range
      * @returns {object} refined boundaries and initial state of highlighting algorithm.
      */
     function refineRangeBoundaries(range) {
-        var startContainer = range.startContainer,
-            endContainer = range.endContainer,
-            ancestor = range.commonAncestorContainer,
-            goDeeper = true;
+        var startContainer = range.startContainer;
+        var endContainer   = range.endContainer;
+        var ancestor       = range.commonAncestorContainer;
+        var goDeeper       = true;
 
         if (range.endOffset === 0) {
             while (!endContainer.previousSibling && endContainer.parentNode !== ancestor) {
@@ -115,8 +128,9 @@
 
     /**
      * Sorts array of DOM elements by its depth in DOM tree.
-     * @param {HTMLElement[]} arr - array to sort.
-     * @param {boolean} descending - order of sort.
+     *
+     * @param {HTMLElement[]} arr Array to sort.
+     * @param {boolean} descending Order of sort.
      */
     function sortByDepth(arr, descending) {
         arr.sort(function (a, b) {
@@ -126,13 +140,14 @@
 
     /**
      * Groups given highlights by timestamp.
+     *
      * @param {Array} highlights
      * @returns {Array} Grouped highlights.
      */
     function groupHighlights(highlights) {
-        var order = [],
-            chunks = {},
-            grouped = [];
+        var order = [];
+        var chunks = {};
+        var grouped = [];
 
         highlights.forEach(function (hl) {
             var timestamp = hl.getAttribute(TIMESTAMP_ATTR);
@@ -164,7 +179,8 @@
 
     /**
      * Utility functions to make DOM manipulation easier.
-     * @param {Node|HTMLElement} [el] - base DOM element to manipulate
+     *
+     * @param {Node|HTMLElement} [el] Base DOM element to manipulate
      * @returns {object}
      */
     var dom = function (el) {
@@ -173,6 +189,7 @@
 
             /**
              * Adds class to element.
+             *
              * @param {string} className
              */
             addClass: function (className) {
@@ -185,6 +202,7 @@
 
             /**
              * Removes class from element.
+             *
              * @param {string} className
              */
             removeClass: function (className) {
@@ -199,11 +217,12 @@
 
             /**
              * Prepends child nodes to base element.
+             *
              * @param {Node[]} nodesToPrepend
              */
             prepend: function (nodesToPrepend) {
-                var nodes = Array.prototype.slice.call(nodesToPrepend),
-                    i = nodes.length;
+                var nodes = Array.prototype.slice.call(nodesToPrepend);
+                var i = nodes.length;
 
                 while (i--) {
                     el.insertBefore(nodes[i], el.firstChild);
@@ -212,20 +231,22 @@
 
             /**
              * Appends child nodes to base element.
+             *
              * @param {Node[]} nodesToAppend
              */
             append: function (nodesToAppend) {
-                var nodes = Array.prototype.slice.call(nodesToAppend);
+                var i, len, nodes = Array.prototype.slice.call(nodesToAppend);
 
-                for (var i = 0, len = nodes.length; i < len; ++i) {
+                for (i = 0, len = nodes.length; i < len; ++i) {
                     el.appendChild(nodes[i]);
                 }
             },
 
             /**
              * Inserts base element after refEl.
-             * @param {Node} refEl - node after which base element will be inserted
-             * @returns {Node} - inserted element
+             *
+             * @param {Node} refEl Node after which base element will be inserted
+             * @returns {Node} Inserted element
              */
             insertAfter: function (refEl) {
                 return refEl.parentNode.insertBefore(el, refEl.nextSibling);
@@ -233,8 +254,9 @@
 
             /**
              * Inserts base element before refEl.
-             * @param {Node} refEl - node before which base element will be inserted
-             * @returns {Node} - inserted element
+             *
+             * @param {Node} refEl Node before which base element will be inserted
+             * @returns {Node} Inserted element
              */
             insertBefore: function (refEl) {
                 return refEl.parentNode.insertBefore(el, refEl);
@@ -250,6 +272,7 @@
 
             /**
              * Returns true if base element contains given child.
+             *
              * @param {Node|HTMLElement} child
              * @returns {boolean}
              */
@@ -259,6 +282,7 @@
 
             /**
              * Wraps base element in wrapper element.
+             *
              * @param {HTMLElement} wrapper
              * @returns {HTMLElement} wrapper element
              */
@@ -273,11 +297,11 @@
 
             /**
              * Unwraps base element.
-             * @returns {Node[]} - child nodes of unwrapped element.
+             *
+             * @returns {Node[]} Child nodes of unwrapped element.
              */
             unwrap: function () {
-                var nodes = Array.prototype.slice.call(el.childNodes),
-                    wrapper;
+                var wrapper, nodes = Array.prototype.slice.call(el.childNodes);
 
                 nodes.forEach(function (node) {
                     wrapper = node.parentNode;
@@ -290,6 +314,7 @@
 
             /**
              * Returns array of base element parents.
+             *
              * @returns {HTMLElement[]}
              */
             parents: function () {
@@ -326,6 +351,7 @@
 
             /**
              * Returns element background color.
+             *
              * @returns {CSSStyleDeclaration.backgroundColor}
              */
             color: function () {
@@ -334,6 +360,7 @@
 
             /**
              * Creates dom element from given html string.
+             *
              * @param {string} html
              * @returns {NodeList}
              */
@@ -345,11 +372,11 @@
 
             /**
              * Returns first range of the window of base element.
+             *
              * @returns {Range}
              */
             getRange: function () {
-                var selection = dom(el).getSelection(),
-                    range;
+                var range, selection = dom(el).getSelection();
 
                 if (selection.rangeCount > 0) {
                     range = selection.getRangeAt(0);
@@ -368,6 +395,7 @@
 
             /**
              * Returns selection object of the window of base element.
+             *
              * @returns {Selection}
              */
             getSelection: function () {
@@ -376,6 +404,7 @@
 
             /**
              * Returns window of the base element.
+             *
              * @returns {Window}
              */
             getWindow: function () {
@@ -384,6 +413,7 @@
 
             /**
              * Returns document of the base element.
+             *
              * @returns {HTMLDocument}
              */
             getDocument: function () {
@@ -395,29 +425,41 @@
     };
 
     function bindEvents(el, scope) {
-        el.addEventListener('mouseup', scope.highlightHandler.bind(scope));
-        el.addEventListener('touchend', scope.highlightHandler.bind(scope));
+        el.addEventListener('mouseup', FUNCTION_BIND);
+        el.addEventListener('touchend', FUNCTION_BIND);
     }
 
     function unbindEvents(el, scope) {
-        el.removeEventListener('mouseup', scope.highlightHandler.bind(scope));
-        el.removeEventListener('touchend', scope.highlightHandler.bind(scope));
+        el.removeEventListener('mouseup', FUNCTION_BIND);
+        el.removeEventListener('touchend', FUNCTION_BIND);
     }
 
     /**
      * Creates TextHighlighter instance and binds to given DOM elements.
-     * @param {HTMLElement} element - DOM element to which highlighted will be applied.
-     * @param {object} [options] - additional options.
-     * @param {string} options.color - highlight color.
-     * @param {string} options.highlightedClass - class added to highlight, 'highlighted' by default.
-     * @param {string} options.contextClass - class added to element to which highlighter is applied,
-     *  'highlighter-context' by default.
-     * @param {function} options.onRemoveHighlight - function called before highlight is removed. Highlight is
-     *  passed as param. Function should return true if highlight should be removed, or false - to prevent removal.
-     * @param {function} options.onBeforeHighlight - function called before highlight is created. Range object is
-     *  passed as param. Function should return true to continue processing, or false - to prevent highlighting.
-     * @param {function} options.onAfterHighlight - function called after highlight is created. Array of created
-     * wrappers is passed as param.
+     *
+     * @param {HTMLElement} element                DOM element to which highlighted will be applied.
+     *
+     * @param {object} [options]                   Additional options.
+     *
+     * @param {string} options.color               Highlight color. Set to false for no inline color.
+     *
+     * @param {string} options.highlightedClass    Class added to highlight, 'highlighted' by default.
+     *
+     * @param {string} options.contextClass        Class added to element to which highlighter is applied,
+     *                                             'highlighter-context' by default.
+     *
+     * @param {string} options.tagName             Highlighter wrapper element, 'span' by default.
+     *
+     * @param {function} options.onRemoveHighlight Function called before highlight is removed. Highlight is
+     *                                             passed as param. Function should return true if highlight
+     *                                             should be removed, or false - to prevent removal.
+     *
+     * @param {function} options.onBeforeHighlight Function called before highlight is created. Range object is
+     *                                             passed as param. Function should return true to continue
+     *                                             processing, or false - to prevent highlighting.
+     *
+     * @param {function} options.onAfterHighlight  Function called after highlight is created. Array of created
+     *                                             wrappers is passed as param.
      * @class TextHighlighter
      */
     function TextHighlighter(element, options) {
@@ -427,21 +469,28 @@
 
         this.el = element;
         this.options = defaults(options, {
+            enabled: true,
             color: '#ffff7b',
             highlightedClass: 'highlighted',
             contextClass: 'highlighter-context',
+            tagName: 'span',
             onRemoveHighlight: function () { return true; },
             onBeforeHighlight: function () { return true; },
             onAfterHighlight: function () { }
         });
 
         dom(this.el).addClass(this.options.contextClass);
-        bindEvents(this.el, this);
+        FUNCTION_BIND = this.highlightHandler.bind(this);
+
+        if (this.options.enabled) {
+            bindEvents(this.el, this);
+        }
     }
 
     /**
      * Permanently disables highlighting.
      * Unbinds events and remove context element class.
+     *
      * @memberof TextHighlighter
      */
     TextHighlighter.prototype.destroy = function () {
@@ -455,15 +504,18 @@
 
     /**
      * Highlights current range.
-     * @param {boolean} keepRange - Don't remove range after highlighting. Default: false.
+     *
+     * @param {boolean} keepRange Don't remove range after highlighting. Default: false.
      * @memberof TextHighlighter
      */
     TextHighlighter.prototype.doHighlight = function (keepRange) {
-        var range = dom(this.el).getRange(),
-            wrapper,
-            createdHighlights,
-            normalizedHighlights,
-            timestamp;
+
+        if (!this.options.enabled) {
+            return false;
+        }
+
+        var range = dom(this.el).getRange();
+        var wrapper, createdHighlights, normalizedHighlights, timestamp;
 
         if (!range || range.collapsed) {
             return;
@@ -488,9 +540,10 @@
     /**
      * Highlights range.
      * Wraps text of given range object in wrapper element.
+     *
      * @param {Range} range
      * @param {HTMLElement} wrapper
-     * @returns {Array} - array of created highlights.
+     * @returns {Array} Array of created highlights.
      * @memberof TextHighlighter
      */
     TextHighlighter.prototype.highlightRange = function (range, wrapper) {
@@ -498,23 +551,21 @@
             return [];
         }
 
-        var result = refineRangeBoundaries(range),
-            startContainer = result.startContainer,
-            endContainer = result.endContainer,
-            goDeeper = result.goDeeper,
-            done = false,
-            node = startContainer,
-            highlights = [],
-            highlight,
-            wrapperClone,
-            nodeParent;
+        var result = refineRangeBoundaries(range);
+        var startContainer = result.startContainer;
+        var endContainer = result.endContainer;
+        var goDeeper = result.goDeeper;
+        var done = false;
+        var node = startContainer;
+        var highlights = [];
+        var highlight, wrapperClone, nodeParent;
 
         do {
             if (goDeeper && node.nodeType === NODE_TYPE.TEXT_NODE) {
 
                 if (IGNORE_TAGS.indexOf(node.parentNode.tagName) === -1 && node.nodeValue.trim() !== '') {
                     wrapperClone = wrapper.cloneNode(true);
-                    wrapperClone.setAttribute(DATA_ATTR, true);
+                    wrapperClone.setAttribute(DATA_ATTR, !! this.options.color);
                     nodeParent = node.parentNode;
 
                     // highlight if a node is inside the el
@@ -555,9 +606,12 @@
      * Normalizes highlights. Ensures that highlighting is done with use of the smallest possible number of
      * wrapping HTML elements.
      * Flattens highlights structure and merges sibling highlights. Normalizes text nodes within highlights.
-     * @param {Array} highlights - highlights to normalize.
-     * @returns {Array} - array of normalized highlights. Order and number of returned highlights may be different than
-     * input highlights.
+     *
+     * @param {Array}   Highlights Highlights to normalize.
+     *
+     * @returns {Array} Array of normalized highlights. Order and number of returned highlights may be different
+     *                  than input highlights.
+     *
      * @memberof TextHighlighter
      */
     TextHighlighter.prototype.normalizeHighlights = function (highlights) {
@@ -582,12 +636,12 @@
     /**
      * Flattens highlights structure.
      * Note: this method changes input highlights - their order and number after calling this method may change.
-     * @param {Array} highlights - highlights to flatten.
+     *
+     * @param {Array} highlights Highlights to flatten.
      * @memberof TextHighlighter
      */
     TextHighlighter.prototype.flattenNestedHighlights = function (highlights) {
-        var again,
-            self = this;
+        var again, self = this;
 
         sortByDepth(highlights, true);
 
@@ -595,9 +649,9 @@
             var again = false;
 
             highlights.forEach(function (hl, i) {
-                var parent = hl.parentElement,
-                    parentPrev = parent.previousSibling,
-                    parentNext = parent.nextSibling;
+                var parent = hl.parentElement;
+                var parentPrev = parent.previousSibling;
+                var parentNext = parent.nextSibling;
 
                 if (self.isHighlight(parent)) {
 
@@ -637,7 +691,8 @@
 
     /**
      * Merges sibling highlights and normalizes descendant text nodes.
-     * Note: this method changes input highlights - their order and number after calling this method may change.
+     * Note: this method changes input highlights Their order and number after calling this method may change.
+     *
      * @param highlights
      * @memberof TextHighlighter
      */
@@ -651,8 +706,8 @@
         }
 
         highlights.forEach(function (highlight) {
-            var prev = highlight.previousSibling,
-                next = highlight.nextSibling;
+            var prev = highlight.previousSibling;
+            var next = highlight.nextSibling;
 
             if (shouldMerge(highlight, prev)) {
                 dom(highlight).prepend(prev.childNodes);
@@ -669,7 +724,8 @@
 
     /**
      * Sets highlighting color.
-     * @param {string} color - valid CSS color.
+     *
+     * @param {string} color Valid CSS color.
      * @memberof TextHighlighter
      */
     TextHighlighter.prototype.setColor = function (color) {
@@ -678,6 +734,7 @@
 
     /**
      * Returns highlighting color.
+     *
      * @returns {string}
      * @memberof TextHighlighter
      */
@@ -687,18 +744,19 @@
 
     /**
      * Removes highlights from element. If element is a highlight itself, it is removed as well.
-     * If no element is given, all highlights all removed.
-     * @param {HTMLElement} [element] - element to remove highlights from
+     * If no element is given, all highlights are removed.
+     *
+     * @param {HTMLElement} element Element to remove highlights from.
      * @memberof TextHighlighter
      */
     TextHighlighter.prototype.removeHighlights = function (element) {
-        var container = element || this.el,
-            highlights = this.getHighlights({ container: container }),
-            self = this;
+        var container = element || this.el;
+        var highlights = this.getHighlights({ container: container });
+        var self = this;
 
         function mergeSiblingTextNodes(textNode) {
-            var prev = textNode.previousSibling,
-                next = textNode.nextSibling;
+            var prev = textNode.previousSibling;
+            var next = textNode.nextSibling;
 
             if (prev && prev.nodeType === NODE_TYPE.TEXT_NODE) {
                 textNode.nodeValue = prev.nodeValue + textNode.nodeValue;
@@ -729,26 +787,35 @@
 
     /**
      * Returns highlights from given container.
-     * @param params
-     * @param {HTMLElement} [params.container] - return highlights from this element. Default: the element the
-     * highlighter is applied to.
-     * @param {boolean} [params.andSelf] - if set to true and container is a highlight itself, add container to
-     * returned results. Default: true.
-     * @param {boolean} [params.grouped] - if set to true, highlights are grouped in logical groups of highlights added
-     * in the same moment. Each group is an object which has got array of highlights, 'toString' method and 'timestamp'
-     * property. Default: false.
-     * @returns {Array} - array of highlights.
+     *
+     * @param {object}
+     * @param {HTMLElement} [params.container] Return highlights from this element.
+     *
+     *                                         Default: the element the highlighter is applied to.
+     * @param {boolean}     [params.andSelf]   if set to true and container is a highlight itself, add container
+     *                                         to returned results.
+     *                                         Default: true.
+     *
+     * @param {boolean}     [params.grouped]   if set to true, highlights are grouped in logical groups of
+     *                                         highlights added in the same moment. Each group is an object
+     *                                         which has got array of highlights, 'toString' method and 'timestamp'
+     *                                         property.
+     *                                         If set to "last" will return most last group added, and if set
+     *                                         to "first", will return first group.
+     *                                         Default: false.
+     *
+     * @returns {Array}                        Array of highlights.
      * @memberof TextHighlighter
      */
     TextHighlighter.prototype.getHighlights = function (params) {
         params = defaults(params, {
             container: this.el,
             andSelf: true,
-            grouped: false
+            grouped: false, // or "first", last"
         });
 
-        var nodeList = params.container.querySelectorAll('[' + DATA_ATTR + ']'),
-            highlights = Array.prototype.slice.call(nodeList);
+        var nodeList = params.container.querySelectorAll('[' + DATA_ATTR + ']');
+        var highlights = Array.prototype.slice.call(nodeList);
 
         if (params.andSelf === true && params.container.hasAttribute(DATA_ATTR)) {
             highlights.push(params.container);
@@ -756,6 +823,11 @@
 
         if (params.grouped) {
             highlights = groupHighlights(highlights);
+            if ( 'last' === params.grouped ) {
+                highlights = highlights[highlights.length-1];
+            } else if ( 'first' === params.grouped ) {
+                highlights = highlights[0];
+            }
         }
 
         return highlights;
@@ -763,8 +835,9 @@
 
     /**
      * Returns true if element is a highlight.
-     * All highlights have 'data-highlighted' attribute.
-     * @param el - element to check.
+     * All highlights have 'data-highlighted' (DATA_ATTR) attribute.
+     *
+     * @param el Element to check.
      * @returns {boolean}
      * @memberof TextHighlighter
      */
@@ -774,17 +847,22 @@
 
     /**
      * Serializes all highlights in the element the highlighter is applied to.
-     * @returns {string} - stringified JSON with highlights definition
+     *
+     * @param {object} params Params which are passed to `this.getHighlights`.
+     * @returns {string} Stringified JSON with highlights definition
      * @memberof TextHighlighter
      */
-    TextHighlighter.prototype.serializeHighlights = function () {
-        var highlights = this.getHighlights(),
-            refEl = this.el,
-            hlDescriptors = [];
+    TextHighlighter.prototype.serializeHighlights = function (params) {
+        var highlights = this.getHighlights(params || {});
+        var refEl = this.el;
+        var hlDescriptors = [];
+
+        if ( highlights.chunks ) {
+            highlights = highlights.chunks;
+        }
 
         function getElementPath(el, refElement) {
-            var path = [],
-                childNodes;
+            var childNodes, path = [];
 
             do {
                 childNodes = Array.prototype.slice.call(el.parentNode.childNodes);
@@ -798,10 +876,10 @@
         sortByDepth(highlights, false);
 
         highlights.forEach(function (highlight) {
-            var offset = 0, // Hl offset from previous sibling within parent node.
-                length = highlight.textContent.length,
-                hlPath = getElementPath(highlight, refEl),
-                wrapper = highlight.cloneNode(true);
+            var offset  = 0; // Hl offset from previous sibling within parent node.
+            var length  = highlight.textContent.length;
+            var hlPath  = getElementPath(highlight, refEl);
+            var wrapper = highlight.cloneNode(true);
 
             wrapper.innerHTML = '';
             wrapper = wrapper.outerHTML;
@@ -824,15 +902,16 @@
 
     /**
      * Deserializes highlights.
+     *
      * @throws exception when can't parse JSON or JSON has invalid structure.
-     * @param {object} json - JSON object with highlights definition.
-     * @returns {Array} - array of deserialized highlights.
+     * @param {object} json JSON object with highlights definition.
+     * @returns {Array} Array of deserialized highlights.
      * @memberof TextHighlighter
      */
     TextHighlighter.prototype.deserializeHighlights = function (json) {
-        var hlDescriptors,
-            highlights = [],
-            self = this;
+        var highlights = [];
+        var self = this;
+        var hlDescriptors;
 
         if (!json) {
             return highlights;
@@ -846,17 +925,15 @@
 
         function deserializationFn(hlDescriptor) {
             var hl = {
-                    wrapper: hlDescriptor[0],
-                    text: hlDescriptor[1],
-                    path: hlDescriptor[2].split(':'),
-                    offset: hlDescriptor[3],
-                    length: hlDescriptor[4]
-                },
-                elIndex = hl.path.pop(),
-                node = self.el,
-                hlNode,
-                highlight,
-                idx;
+                wrapper: hlDescriptor[0],
+                text: hlDescriptor[1],
+                path: hlDescriptor[2].split(':'),
+                offset: hlDescriptor[3],
+                length: hlDescriptor[4]
+            };
+            var elIndex = hl.path.pop();
+            var node = self.el;
+            var hlNode, highlight, idx;
 
             while (!!(idx = hl.path.shift())) {
                 node = node.childNodes[idx];
@@ -897,15 +974,16 @@
 
     /**
      * Finds and highlights given text.
-     * @param {string} text - text to search for
-     * @param {boolean} [caseSensitive] - if set to true, performs case sensitive search (default: true)
+     *
+     * @param {string} text Text to search for
+     * @param {boolean} [caseSensitive] If set to true, performs case sensitive search (default: true)
      * @memberof TextHighlighter
      */
     TextHighlighter.prototype.find = function (text, caseSensitive) {
-        var wnd = dom(this.el).getWindow(),
-            scrollX = wnd.scrollX,
-            scrollY = wnd.scrollY,
-            caseSens = (typeof caseSensitive === 'undefined' ? true : caseSensitive);
+        var wnd = dom(this.el).getWindow();
+        var scrollX = wnd.scrollX;
+        var scrollY = wnd.scrollY;
+        var caseSens = (typeof caseSensitive === 'undefined' ? true : caseSensitive);
 
         dom(this.el).removeAllRanges();
 
@@ -932,16 +1010,43 @@
     };
 
     /**
+     * Disable highlighter.
+     *
+     * @since  1.2.1
+     * @memberof TextHighlighter
+     */
+    TextHighlighter.prototype.disable = function() {
+        if (this.options.enabled) {
+            unbindEvents(this.el, this);
+            this.options.enabled=false;
+        }
+    };
+
+    /**
+     * Enable highlighter.
+     *
+     * @since  1.2.1
+     * @memberof TextHighlighter
+     */
+    TextHighlighter.prototype.enable = function() {
+        if (!this.options.enabled) {
+            bindEvents(this.el, this);
+            this.options.enabled=true;
+        }
+    };
+
+    /**
      * Creates wrapper for highlights.
-     * TextHighlighter instance calls this method each time it needs to create highlights and pass options retrieved
-     * in constructor.
-     * @param {object} options - the same object as in TextHighlighter constructor.
+     * TextHighlighter instance calls this method each time it needs to create highlights and
+     * pass options retrieved in constructor.
+     *
+     * @param {object} options The same object as in TextHighlighter constructor.
      * @returns {HTMLElement}
      * @memberof TextHighlighter
      * @static
      */
     TextHighlighter.createWrapper = function (options) {
-        var span = document.createElement('span');
+        var span = document.createElement(options.tagName);
         span.style.backgroundColor = options.color;
         span.className = options.highlightedClass;
         return span;
