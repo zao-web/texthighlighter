@@ -471,6 +471,8 @@
      *
      * @param {string} options.tagName             Highlighter wrapper element, 'span' by default.
      *
+     * @param {boolean} options.keepRange          Don't remove range after highlighting. Default: false.
+     *
      * @param {function} options.onRemoveHighlight Function called before highlight is removed. Highlight is
      *                                             passed as param. Function should return true if highlight
      *                                             should be removed, or false - to prevent removal.
@@ -495,6 +497,7 @@
             highlightedClass: 'highlighted',
             contextClass: 'highlighter-context',
             tagName: 'span',
+            keepRange: false,
             onRemoveHighlight: function () { return true; },
             onBeforeHighlight: function () { return true; },
             onAfterHighlight: function () { }
@@ -530,6 +533,7 @@
      * @memberof TextHighlighter
      */
     TextHighlighter.prototype.doHighlight = function (keepRange) {
+        keepRange = 'undefined' === typeof keepRange ? this.options.keepRange : keepRange;
 
         if (!this.options.enabled) {
             return false;
