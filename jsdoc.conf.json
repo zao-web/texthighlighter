@@ -12,7 +12,7 @@
         "outputSourcePath"      : true,
         "systemName"            : "TextHighlighter",
         "footer"                : "",
-        "copyright"             : "TextHighlighter Copyright © 2011 - 2014 by mirz",
+        "copyright"             : "TextHighlighter Copyright © 2011 - 2016 by mirz",
         "navType"               : "inline",
         "theme"                 : "cosmo",
         "linenums"              : true,

@@ -16,5 +16,6 @@
     "url": "https://github.com/mir3z/texthighlighter.git"
   },
   "author": "mirz <mirz.hq@gmail.com>",
+  "contributors": ["Justin Sternberg <jt@zao.is> (http://zao.is/)"],
   "license": "MIT"
 }
