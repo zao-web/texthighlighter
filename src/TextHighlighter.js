@@ -412,6 +412,7 @@
      * @param {string} options.highlightedClass - class added to highlight, 'highlighted' by default.
      * @param {string} options.contextClass - class added to element to which highlighter is applied,
      *  'highlighter-context' by default.
+     * @param {string} options.tagName - highlighter wrapper element, 'span' by default.
      * @param {function} options.onRemoveHighlight - function called before highlight is removed. Highlight is
      *  passed as param. Function should return true if highlight should be removed, or false - to prevent removal.
      * @param {function} options.onBeforeHighlight - function called before highlight is created. Range object is
@@ -431,6 +432,7 @@
             color: '#ffff7b',
             highlightedClass: 'highlighted',
             contextClass: 'highlighter-context',
+            tagName: 'span',
             onRemoveHighlight: function () { return true; },
             onBeforeHighlight: function () { return true; },
             onAfterHighlight: function () { }
@@ -950,7 +952,7 @@
      * @static
      */
     TextHighlighter.createWrapper = function (options) {
-        var span = document.createElement(options.wrapper);
+        var span = document.createElement(options.tagName);
         span.style.backgroundColor = options.color;
         span.className = options.highlightedClass;
         return span;
