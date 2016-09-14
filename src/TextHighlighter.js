@@ -790,13 +790,18 @@
 
     /**
      * Serializes all highlights in the element the highlighter is applied to.
+     * @param {object} params - params which are passed to `this.getHighlights`.
      * @returns {string} - stringified JSON with highlights definition
      * @memberof TextHighlighter
      */
-    TextHighlighter.prototype.serializeHighlights = function () {
-        var highlights = this.getHighlights(),
+    TextHighlighter.prototype.serializeHighlights = function (params) {
+        var highlights = this.getHighlights(params || {}),
             refEl = this.el,
             hlDescriptors = [];
+
+        if ( highlights.chunks ) {
+            highlights = highlights.chunks;
+        }
 
         function getElementPath(el, refElement) {
             var path = [],
