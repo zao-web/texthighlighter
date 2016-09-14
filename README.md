@@ -22,8 +22,8 @@ And use it!
 var hltr = new TextHighlighter(document.body);
 ```
 
-For more details see [API reference](http://mir3z.github.io/texthighlighter/doc/index.html) or 
-[Wiki](https://github.com/mir3z/texthighlighter/wiki) pages on GitHub.
+For more details see [API reference](http://zao-web.github.io/texthighlighter/doc/index.html) or 
+[Wiki](https://github.com/zao-web/texthighlighter/wiki) pages on GitHub.
 
 Also check Demos section below for examples of usage.
 
@@ -44,12 +44,12 @@ Should work in all decent browsers and IE >= 9.
 
 ## Demos
 
-* [Simple demo](http://mir3z.github.io/texthighlighter/demos/simple.html)
-* [Callbacks](http://mir3z.github.io/texthighlighter/demos/callbacks.html)
-* [Serialization](http://mir3z.github.io/texthighlighter/demos/serialization.html)
-* [Iframe](http://mir3z.github.io/texthighlighter/demos/iframe.html)
+* [Simple demo](http://zao-web.github.io/texthighlighter/demos/simple.html)
+* [Callbacks](http://zao-web.github.io/texthighlighter/demos/callbacks.html)
+* [Serialization](http://zao-web.github.io/texthighlighter/demos/serialization.html)
+* [Iframe](http://zao-web.github.io/texthighlighter/demos/iframe.html)
 
 ## Documentation
    
-You may check [API reference](http://mir3z.github.io/texthighlighter/doc/index.html) or 
-[Wiki](https://github.com/mir3z/texthighlighter/wiki) pages on GitHub.
+You may check [API reference](http://zao-web.github.io/texthighlighter/doc/index.html) or 
+[Wiki](https://github.com/zao-web/texthighlighter/wiki) pages on GitHub.
