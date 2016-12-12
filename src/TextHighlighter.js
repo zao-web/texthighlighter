@@ -287,7 +287,7 @@
              * Removes base element from DOM.
              */
             remove: function () {
-                el.parentNode.removeChild(el);
+                if (el.parentNode) { el.parentNode.removeChild(el); }
                 el = null;
             },
 
@@ -322,13 +322,15 @@
              * @returns {Node[]} Child nodes of unwrapped element.
              */
             unwrap: function () {
-                var wrapper, nodes = Array.prototype.slice.call(el.childNodes);
+                var wrapper, nodes = Array.prototype.slice.call(el.childNodes), toRemove = [];
 
                 nodes.forEach(function (node) {
                     wrapper = node.parentNode;
                     dom(node).insertBefore(node.parentNode);
-                    dom(wrapper).remove();
+                    toRemove.push(wrapper);
                 });
+
+                toRemove.forEach(function (node) { dom(node).remove(); });
 
                 return nodes;
             },
@@ -772,14 +774,17 @@
      * If no element is given, all highlights are removed.
      *
      * @param {HTMLElement} element Element to remove highlights from.
+     * @param {function} callback Optional inline callback for removing specific highlights
      * @memberof TextHighlighter
      */
-    TextHighlighter.prototype.removeHighlights = function (element) {
+    TextHighlighter.prototype.removeHighlights = function (element, callback) {
         var container = element || this.el;
         var highlights = this.getHighlights({ container: container });
         var self = this;
 
         function mergeSiblingTextNodes(textNode) {
+            if (self.isHighlight(textNode)) { return; }
+
             var prev = textNode.previousSibling;
             var next = textNode.nextSibling;
 
@@ -804,7 +809,8 @@
         sortByDepth(highlights, true);
 
         highlights.forEach(function (hl) {
-            if (self.options.onRemoveHighlight(hl) === true) {
+            if (self.options.onRemoveHighlight(hl) === true &&
+              (typeof callback !== 'function' || callback(hl) === true)) {
                 removeHighlight(hl);
             }
         });
